@@ -80,3 +80,45 @@ CREATE TABLE IF NOT EXISTS score (
 );
 SHOW TABLES;
 
+-- Create users table for authentication and admin functionality
+USE bowl;
+
+CREATE TABLE IF NOT EXISTS users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(100) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    role VARCHAR(50) NOT NULL DEFAULT 'user',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Insert initial admin user (username: 123456, password: 123)
+INSERT INTO users (username, email, password, role) VALUES 
+('123456', 'admin@example.com', '$2y$10$YIjlrWxVd0V7MKlkGkq1..x7nL.8Qz7VpP6L8VK2.KZ0kJ1X6QLLK', 'admin')
+ON DUPLICATE KEY UPDATE role='admin';
+
+SHOW TABLES;
+-- Voeg testdata toe aan de database
+
+-- Voeg banen toe
+INSERT INTO baan (baan_nummer, is_kinderbaan) VALUES
+(1, 0),
+(2, 0),
+(3, 0),
+(4, 0),
+(5, 0),
+(6, 0),
+(7, 1),
+(8, 1);
+
+-- Voeg tarieven toe
+INSERT INTO tarief (naam, prijs_per_uur, tijd_van, tijd_tot) VALUES
+('Ma-do 14:00-22:00', 24.00, '14:00:00', '22:00:00'),
+('Vr-zo 14:00-18:00', 28.00, '14:00:00', '18:00:00'),
+('Vr-zo 18:00-24:00', 31.50, '18:00:00', '24:00:00');
+
+-- Voeg opties toe
+INSERT INTO optie (naam, beschrijving, meerprijs) VALUES
+('Snackpakket basis de luxe', 'Chips, cola en verassing', 15.00),
+('Kinderpartij (chips, cola en verassing)', 'Speciaal voor kinderverjaardagen', 25.00),
+('Vrijgezellenfeest', 'Decoratie en special menu', 40.00);

@@ -85,35 +85,19 @@
         if(isset($_GET['error']) && $_GET['error'] == '1') {
             echo '<div class="error-message">Registration failed. Please try again.</div>';
         }
+        if(isset($_GET['success']) && $_GET['success'] == '1') {
+            echo '<div class="error-message" style="color: green;">Registration successful! Please login.</div>';
+        }
         ?>
         
         <form action="insertto.php" method="post">
-            <label for="userType">Register as:</label>
-            <select id="userType" name="userType" required onchange="updateForm()">
-                <option value="klant">Klant</option>
-                <option value="medewerker">Medewerker</option>
-            </select>
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" required />
             
-            <div id="klant-fields">
-                <label for="voornaam">First Name</label>
-                <input type="text" id="voornaam" name="voornaam" />
-                
-                <label for="achternaam">Last Name</label>
-                <input type="text" id="achternaam" name="achternaam" />
-                
-                <label for="telefoon">Phone (optional)</label>
-                <input type="text" id="telefoon" name="telefoon" />
-            </div>
-            
-            <div id="medewerker-fields" style="display:none;">
-                <label for="naam">Full Name</label>
-                <input type="text" id="naam" name="naam" />
-            </div>
-            
-            <label for="email">Email</label>
+            <label for="email">Email:</label>
             <input type="email" id="email" name="email" required />
             
-            <label for="password">Password</label>
+            <label for="password">Password:</label>
             <input type="password" id="password" name="password" required />
             
             <button type="submit" name="signup">Register</button>
