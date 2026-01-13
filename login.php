@@ -34,7 +34,7 @@ session_start();
             margin-bottom: 0.3rem;
             font-weight: bold;
         }
-        input[type="text"],
+        input[type="email"], /* Changed to email */
         input[type="password"] {
             width: 100%;
             padding: 0.5rem;
@@ -78,7 +78,7 @@ session_start();
         <h2>Login</h2>
         <?php
         if(isset($_GET['error']) && $_GET['error'] == '1') {
-            echo '<div class="error-message">Invalid username or password</div>';
+            echo '<div class="error-message">Invalid email or password</div>';
         }
         if(isset($_GET['registered']) && $_GET['registered'] == '1') {
             echo '<div class="success-message" style="color: green; text-align: center; margin-bottom: 1rem;">Registration successful! Please login.</div>';
@@ -86,8 +86,8 @@ session_start();
         ?>
         
         <form action="checkuser.php" method="post">
-            <label for="username">Username</label>
-            <input type="text" id="username" name="username" required />
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" required placeholder="name@example.com" />
             
             <label for="password">Password</label>
             <input type="password" id="password" name="password" required />

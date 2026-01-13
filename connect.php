@@ -1,10 +1,10 @@
 <?php
 // Database connection file
-$servername = "mysql";
-$username1 = "root";
-$password1 = "password";
+$servername = "sql305.infinityfree.com";
+$username1 = "if0_40576696";
+$password1 = "3HNSgnTKq91NDp";
 
-$dbname = "bowl";
+$dbname = "if0_40576696_examenprojectmbo";
 
 $conn = mysqli_connect($servername, $username1, $password1, $dbname);
 if (!$conn) {

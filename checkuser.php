@@ -1,67 +1,62 @@
 <?php
-// User authentication handler
 session_start();
 
 if (isset($_POST["login"])){
-    $username = $_POST['username'];
-    $password = $_POST['password'];
+    // Sanitize user input to prevent XSS
+    $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
+    $password = $_POST['password']; 
 
-    if (!$username || !$password) {
-        header("Location: login.php?error=1");
+    if (empty($email) || empty($password)) {
+        $_SESSION['login_error'] = "Email and password are required";
+        header("Location: login.php");
         exit();
     }
 
     require 'connect.php';
 
-    // Check users table
-    $stmt = $conn->prepare("SELECT id, username, email, password, role FROM users WHERE username = ?");
-    $stmt->bind_param("s", $username);
+    // Try to login as medewerker first
+    $stmt = $conn->prepare("SELECT medewerker_id as id, email, naam as username, wachtwoord_hash, rol as role FROM medewerker WHERE email = ?");
+    $stmt->bind_param("s", $email);
     $stmt->execute();
     $result = $stmt->get_result();
 
+    if ($result->num_rows == 0) {
+        // If not a medewerker, try to login as klant
+        $stmt = $conn->prepare("SELECT klant_id as id, email, CONCAT(voornaam, ' ', achternaam) as username, wachtwoord_hash FROM klant WHERE email = ?");
+        $stmt->bind_param("s", $email);
+        $stmt->execute();
+        $result = $stmt->get_result();
+    }
+
     if ($result->num_rows > 0) {
         $user = $result->fetch_assoc();
-        
-        // Check password - support both hashed and plaintext passwords
-        $passwordValid = false;
-        
-        // Try password_verify first (for bcrypt hashes)
-        if (password_verify($password, $user['password'])) {
-            $passwordValid = true;
-        } 
-        // Also support plaintext comparison for testing
-        elseif ($password === $user['password']) {
-            $passwordValid = true;
-        }
-        
-        if ($passwordValid) {
-            // Store user data in session
+
+        if (password_verify($password, $user['wachtwoord_hash'])) {
+            session_regenerate_id(true);
+
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['username'] = $user['username'];
             $_SESSION['email'] = $user['email'];
-            $_SESSION['role'] = $user['role'];
-            $_SESSION['is_admin'] = ($user['role'] == 'admin') ? true : false;
-            
-            // Redirect based on role
-            if ($user['role'] == 'admin') {
-                header("Location: showuser.php");
-            } elseif ($user['role'] == 'medewerker') {
-                header("Location: medewerker.php");
+            $_SESSION['role'] = $user['role'] ?? 'klant';
+            $_SESSION['is_admin'] = ($_SESSION['role'] == 'medewerker' || $_SESSION['role'] == 'admin');
+
+            if ($_SESSION['is_admin']) {
+                header("Location: medewerkers_dashboard.php");
             } else {
-                header("Location: homep.php");
+                header("Location: klanten_dashboard.php");
             }
             exit();
         } else {
-            // Password doesn't match
-            header("Location: login.php?error=1");
+            $_SESSION['login_error'] = "Invalid email or password";
+            header("Location: login.php");
             exit();
         }
     } else {
-        // User not found
-        header("Location: login.php?error=1");
+        $_SESSION['login_error'] = "Invalid email or password";
+        header("Location: login.php");
         exit();
     }
-    
+
     $stmt->close();
     $conn->close();
 }

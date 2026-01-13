@@ -1,66 +1,108 @@
 <?php
-// Handle user registration - saves to users table
 session_start();
 require 'connect.php';
 
 if (isset($_POST['signup'])) {
-    $username = isset($_POST['username']) ? trim($_POST['username']) : null;
-    $email = isset($_POST['email']) ? trim($_POST['email']) : null;
-    $password = isset($_POST['password']) ? $_POST['password'] : null;
+    $userType = $_POST['userType'] ?? 'klant'; 
     
-    // Validate input
-    if (empty($username) || empty($email) || empty($password)) {
-        header("Location: register.php?error=1");
+    // 1. Check for Empty Fields (Basic Validation)
+    if (empty($_POST['email']) || empty($_POST['password'])) {
+        header("Location: register.php?error=empty_fields");
         exit();
     }
     
-    // Hash the password
+    // 2. Validate Email Format
+    $email = trim($_POST['email']);
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        header("Location: register.php?error=invalid_email");
+        exit();
+    }
+
+    $password = $_POST['password'];
+    if (strlen($password) < 4) {
+        header("Location: register.php?error=password_short");
+        exit();
+    }
+
     $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
     
-    // Check if email or username already exists
-    $stmt = $conn->prepare("SELECT id FROM users WHERE email = ? OR username = ?");
-    if (!$stmt) {
-        header("Location: register.php?error=1");
-        exit();
-    }
+ 
+    // LOGIC FOR MEDEWERKER
     
-    $stmt->bind_param("ss", $email, $username);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    
-    if ($result->num_rows > 0) {
-        // Email or username already exists
+    if ($userType === 'medewerker') {
+        if (empty($_POST['naam'])) {
+            header("Location: register.php?error=empty_fields");
+            exit();
+        }
+        $naam = trim($_POST['naam']);
+        
+        // Check for Duplicate Email
+        $stmt = $conn->prepare("SELECT medewerker_id FROM medewerker WHERE email = ?");
+        $stmt->bind_param("s", $email);
+        $stmt->execute();
+        $stmt->store_result();
+        
+        if ($stmt->num_rows > 0) {
+            $stmt->close();
+            header("Location: register.php?error=email_taken");
+            exit();
+        }
         $stmt->close();
-        header("Location: register.php?error=1");
-        exit();
-    }
-    $stmt->close();
-    
-    // Insert new user with role 'user' (klant)
-    $role = 'user';
-    $stmt = $conn->prepare("INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)");
-    if (!$stmt) {
-        header("Location: register.php?error=1");
-        exit();
-    }
-    
-    $stmt->bind_param("ssss", $username, $email, $hashedPassword, $role);
-    
-    if ($stmt->execute()) {
-        $stmt->close();
-        $conn->close();
-        header("Location: login.php?registered=1");
-        exit();
-    } else {
-        // Debug: show error
-        $error = $stmt->error;
-        $stmt->close();
-        $conn->close();
-        echo "Registration Error: " . htmlspecialchars($error);
-        echo "<br><a href='register.php'>Back to Register</a>";
-        exit();
-    }
-}
+        
+        // Insert Medewerker
+        $stmt = $conn->prepare("INSERT INTO medewerker (naam, email, wachtwoord_hash, rol) VALUES (?, ?, ?, 'medewerker')");
+        $stmt->bind_param("sss", $naam, $email, $hashedPassword);
+        
+        if ($stmt->execute()) {
+            header("Location: login.php?registered=1");
+            exit();
+        } else {
+            header("Location: register.php?error=system_error");
+            exit();
+        }
+        
 
-$conn->close();
+    // LOGIC FOR KLANT
+  
+    } else {
+        if (empty($_POST['voornaam']) || empty($_POST['achternaam'])) {
+            header("Location: register.php?error=empty_fields");
+            exit();
+        }
+        
+        $voornaam = trim($_POST['voornaam']);
+        $achternaam = trim($_POST['achternaam']);
+        $telefoon = !empty($_POST['telefoon']) ? trim($_POST['telefoon']) : null;
+        
+        // Check for Duplicate Email
+        $stmt = $conn->prepare("SELECT klant_id FROM klant WHERE email = ?");
+        $stmt->bind_param("s", $email);
+        $stmt->execute();
+        $stmt->store_result();
+        
+        if ($stmt->num_rows > 0) {
+            $stmt->close();
+            header("Location: register.php?error=email_taken");
+            exit();
+        }
+        $stmt->close();
+        
+        // Insert Klant
+        $stmt = $conn->prepare("INSERT INTO klant (voornaam, achternaam, email, wachtwoord_hash, telefoon) VALUES (?, ?, ?, ?, ?)");
+        $stmt->bind_param("sssss", $voornaam, $achternaam, $email, $hashedPassword, $telefoon);
+        
+        if ($stmt->execute()) {
+            header("Location: login.php?registered=1");
+            exit();
+        } else {
+            header("Location: register.php?error=system_error");
+            exit();
+        }
+    }
+    
+    $conn->close();
+} else {
+    header("Location: register.php");
+    exit();
+}
 ?>

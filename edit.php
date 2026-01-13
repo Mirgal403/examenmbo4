@@ -117,10 +117,7 @@ if (isset($_GET["id"])){
                 <input type="text" id="username" name="username" value="<?php echo htmlspecialchars($row['username']); ?>" required>
             </div>
 
-            <div class="form-group">
-                <label for="password">Password:</label>
-                <input type="password" id="password" name="password" placeholder="Leave empty to keep current password">
-            </div>
+              
 
             <div class="form-group">
                 <label for="email">Email:</label>
