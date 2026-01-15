@@ -75,7 +75,8 @@ while ($row = $result->fetch_assoc()) {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; */
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
     }
 
     body {
@@ -86,32 +87,57 @@ while ($row = $result->fetch_assoc()) {
       flex-direction: column;
     }
 
-    header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 20px 40px;
-        border-bottom: 1px solid #eee;
-        background: #fff;
+    /* NAVBAR */
+    .navbar {
+      width: 100%;
+      background: var(--white);
+      border-bottom: 1px solid #dddddd;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 40px;
     }
-    
-    .header-left, .header-right { display: flex; align-items: center; }
-    .logo { font-size: 24px; font-weight: 900; color: #999; margin-right: 40px; }
-    .nav-links a { text-decoration: none; color: #333; font-weight: 600; margin: 0 15px; font-size: 14px; }
-    .user-greeting { font-weight: 600; font-size: 14px; margin-right: 20px; }
-    
-    .btn-logout { 
-        background-color: #1a73e8; 
-        color: white; 
-        padding: 10px 20px; 
-        text-decoration: none; 
-        border-radius: 2px; 
-        font-weight: 600; 
-        font-size: 14px; 
-        border: none;
-        cursor: pointer;
+
+    .navbar-brand {
+      font-weight: 700;
+      font-size: 18px;
+      color: var(--text-main);
     }
-    /* ----------------------------------------------------- */
+
+    .navbar-links {
+      display: flex;
+      gap: 32px;
+      align-items: center;
+      flex: 1;
+      justify-content: center;
+    }
+
+    .navbar-link {
+      font-size: 14px;
+      color: var(--text-main);
+      text-decoration: none;
+    }
+
+    .navbar-link:hover {
+      text-decoration: underline;
+    }
+
+    .btn-logout {
+      background: var(--blue);
+      color: var(--white);
+      border: none;
+      padding: 8px 18px;
+      font-size: 14px;
+      font-weight: 500;
+      border-radius: 2px;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .btn-logout:hover {
+      background: var(--blue-dark);
+    }
 
     /* MAIN CONTENT */
     .page {
@@ -215,7 +241,7 @@ while ($row = $result->fetch_assoc()) {
       background: var(--red);
       color: white;
       border: none;
-      padding: 4px 12px;
+      padding: 6px 12px;
       font-size: 12px;
       border-radius: 2px;
       cursor: pointer;
@@ -225,6 +251,22 @@ while ($row = $result->fetch_assoc()) {
 
     .btn-cancel:hover {
       background: #c82333;
+    }
+
+    .btn-view-scores {
+      background: var(--blue);
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      font-size: 12px;
+      border-radius: 2px;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .btn-view-scores:hover {
+      background: var(--blue-dark);
     }
 
     .no-reservations {
@@ -256,30 +298,31 @@ while ($row = $result->fetch_assoc()) {
       .stat-card {
         width: 100%;
       }
-      
-      header {
-          flex-direction: column;
-          gap: 10px;
-          padding: 10px;
+
+      .navbar {
+        padding: 10px 16px;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .navbar-links {
+        order: 3;
+        margin-top: 4px;
       }
     }
   </style>
 </head>
 <body>
+  <!-- NAVBAR -->
+  <header class="navbar">
+    <div class="navbar-brand">Bowling Brooklyn</div>
 
-  <header>
-      <div class="header-left">
-          <div class="logo">Bowling Brooklyn</div>
-          <nav class="nav-links">
-              <a href="klanten_dashboard.php">Dashboard</a>
-              <a href="reserverings_pagina_klant.php">Reservatie</a>
-          </nav>
-      </div>
-      
-      <div class="header-right">
-          <span class="user-greeting">Welkom, <?php echo htmlspecialchars($_SESSION['username']); ?>!</span>
-          <a href="logout.php" class="btn-logout">Uitloggen</a>
-      </div>
+    <nav class="navbar-links">
+      <a href="klanten_dashboard.php" class="navbar-link">Dashboard</a>
+      <a href="reserverings_pagina_klant.php" class="navbar-link">Reservatie</a>
+    </nav>
+
+    <a href="logout.php" class="btn-logout">Uitloggen</a>
   </header>
 
   <!-- PAGE CONTENT -->
@@ -364,7 +407,10 @@ while ($row = $result->fetch_assoc()) {
                   Annuleren
                 </a>
               <?php else: ?>
-                <span style="color: #999; font-size: 12px;">Voltooid</span>
+                <a href="view_scores.php?id=<?php echo $res['reservering_id']; ?>" 
+                   class="btn-view-scores">
+                  Bekijk Scores
+                </a>
               <?php endif; ?>
             </td>
           </tr>
