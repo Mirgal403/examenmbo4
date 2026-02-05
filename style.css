@@ -1,365 +1,353 @@
-/* ====== STYLE.CSS ====== */
-/* Centraal stylesheet voor het bowling reservation systeem */
-/* Kleurenschema: Paars gradient (#667eea -> #764ba2) */
-
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 body {
-    font-family: 'Arial', sans-serif;
-    background: white;
-    min-height: 100vh;
-    padding: 20px;
+  font-family: "Arial", sans-serif;
+  background: white;
+  min-height: 100vh;
+  padding: 20px;
 }
 
 .container {
-    max-width: 900px;
-    margin: 0 auto;
-    background: white;
-    border-radius: 10px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-    overflow: hidden;
+  max-width: 900px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
 }
 
 /* ====== HEADER STYLING ====== */
 .header {
-    background: white;
-    color: #333;
-    padding: 30px;
-    text-align: center;
-    border-bottom: 2px solid #667eea;
+  background: white;
+  color: #333;
+  padding: 30px;
+  text-align: center;
+  border-bottom: 2px solid #667eea;
 }
 
 .header h1 {
-    font-size: 2.2em;
-    margin-bottom: 10px;
+  font-size: 2.2em;
+  margin-bottom: 10px;
 }
 
 .header p {
-    font-size: 1.1em;
-    opacity: 0.9;
+  font-size: 1.1em;
+  opacity: 0.9;
 }
 
-/* ====== NAVBAR STYLING ====== */
 .navbar {
-    background: #f8f9fa;
-    padding: 15px 30px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid #ddd;
+  background: #f8f9fa;
+  padding: 15px 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #ddd;
 }
 
 .navbar-user {
-    color: #333;
-    font-weight: bold;
+  color: #333;
+  font-weight: bold;
 }
 
 .navbar-buttons {
-    display: flex;
-    gap: 10px;
+  display: flex;
+  gap: 10px;
 }
 
 .navbar a {
-    color: #667eea;
-    text-decoration: none;
-    margin: 0 10px;
-    font-weight: bold;
-    transition: color 0.3s;
+  color: #667eea;
+  text-decoration: none;
+  margin: 0 10px;
+  font-weight: bold;
+  transition: color 0.3s;
 }
 
 .navbar a:hover {
-    color: #764ba2;
+  color: #764ba2;
 }
 
 .logout-btn {
-    background: #e74c3c;
-    color: white !important;
-    padding: 8px 16px;
-    border-radius: 5px;
-    margin: 0 !important;
-    transition: background 0.3s;
+  background: #e74c3c;
+  color: white !important;
+  padding: 8px 16px;
+  border-radius: 5px;
+  margin: 0 !important;
+  transition: background 0.3s;
 }
 
 .logout-btn:hover {
-    background: #c0392b !important;
+  background: #c0392b !important;
 }
 
-/* ====== CONTENT AREA ====== */
 .content {
-    padding: 30px;
+  padding: 30px;
 }
 
 .message {
-    padding: 15px 20px;
-    margin-bottom: 20px;
-    border-radius: 5px;
-    font-weight: bold;
-    border: 1px solid;
+  padding: 15px 20px;
+  margin-bottom: 20px;
+  border-radius: 5px;
+  font-weight: bold;
+  border: 1px solid;
 }
 
 .message.success {
-    background: #d4edda;
-    color: #155724;
-    border-color: #c3e6cb;
+  background: #d4edda;
+  color: #155724;
+  border-color: #c3e6cb;
 }
 
 .message.error {
-    background: #f8d7da;
-    color: #721c24;
-    border-color: #f5c6cb;
+  background: #f8d7da;
+  color: #721c24;
+  border-color: #f5c6cb;
 }
 
-/* ====== FORM SECTIONS ====== */
 .form-section {
-    background: #f8f9fa;
-    padding: 25px;
-    border-radius: 8px;
-    margin-bottom: 30px;
-    border: 1px solid #ddd;
+  background: #f8f9fa;
+  padding: 25px;
+  border-radius: 8px;
+  margin-bottom: 30px;
+  border: 1px solid #ddd;
 }
 
 .form-section h2 {
-    color: #333;
-    margin-bottom: 20px;
-    padding-bottom: 10px;
-    border-bottom: 2px solid #667eea;
-    font-size: 1.3em;
+  color: #333;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #667eea;
+  font-size: 1.3em;
 }
 
 .form-group {
-    margin-bottom: 20px;
+  margin-bottom: 20px;
 }
 
 .form-group label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: bold;
-    color: #333;
-    font-size: 0.95em;
+  display: block;
+  margin-bottom: 8px;
+  font-weight: bold;
+  color: #333;
+  font-size: 0.95em;
 }
 
 .form-group input,
 .form-group select {
-    width: 100%;
-    padding: 12px 15px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    font-size: 1em;
-    transition: border-color 0.3s;
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 1em;
+  transition: border-color 0.3s;
 }
 
 .form-group input:focus,
 .form-group select:focus {
-    outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 5px rgba(102, 126, 234, 0.3);
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 5px rgba(102, 126, 234, 0.3);
 }
 
 .form-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
 }
 
 .checkbox-group {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
 }
 
 .checkbox-group input[type="checkbox"] {
-    width: auto;
-    margin: 0;
-    cursor: pointer;
+  width: auto;
+  margin: 0;
+  cursor: pointer;
 }
 
 .checkbox-group label {
-    margin: 0;
-    cursor: pointer;
-    font-weight: normal;
+  margin: 0;
+  cursor: pointer;
+  font-weight: normal;
 }
 
-/* ====== OPTIONS GRID ====== */
 .options-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 15px;
-    margin-top: 15px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  margin-top: 15px;
 }
 
 .option-card {
-    background: white;
-    border: 2px solid #ddd;
-    padding: 15px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: all 0.3s;
+  background: white;
+  border: 2px solid #ddd;
+  padding: 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s;
 }
 
 .option-card:hover {
-    border-color: #667eea;
-    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+  border-color: #667eea;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
 }
 
 .option-card.checked {
-    background: #e8eef7;
-    border-color: #667eea;
+  background: #e8eef7;
+  border-color: #667eea;
 }
 
 .option-name {
-    font-weight: bold;
-    color: #333;
-    margin-bottom: 5px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 5px;
 }
 
 .option-price {
-    color: #667eea;
-    font-weight: bold;
-    font-size: 1.1em;
+  color: #667eea;
+  font-weight: bold;
+  font-size: 1.1em;
 }
 
 .option-description {
-    font-size: 0.85em;
-    color: #666;
-    margin-top: 5px;
+  font-size: 0.85em;
+  color: #666;
+  margin-top: 5px;
 }
 
-/* ====== PRICE SUMMARY ====== */
 .price-summary {
-    background: white;
-    border: 2px solid #667eea;
-    padding: 20px;
-    border-radius: 8px;
-    margin: 30px 0;
+  background: white;
+  border: 2px solid #667eea;
+  padding: 20px;
+  border-radius: 8px;
+  margin: 30px 0;
 }
 
 .price-summary h3 {
-    color: #333;
-    margin-bottom: 15px;
-    font-size: 1.1em;
+  color: #333;
+  margin-bottom: 15px;
+  font-size: 1.1em;
 }
 
 .price-row {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 10px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
 }
 
 .price-row.total {
-    font-weight: bold;
-    font-size: 1.3em;
-    color: #667eea;
-    border: none;
-    margin-top: 10px;
-    padding-top: 10px;
-    border-top: 2px solid #667eea;
+  font-weight: bold;
+  font-size: 1.3em;
+  color: #667eea;
+  border: none;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 2px solid #667eea;
 }
 
-/* ====== BUTTONS ====== */
 .button-group {
-    display: flex;
-    gap: 10px;
-    margin-top: 20px;
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
 }
 
 .btn {
-    flex: 1;
-    padding: 12px 20px;
-    border: none;
-    border-radius: 5px;
-    font-size: 1em;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background 0.3s;
+  flex: 1;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 5px;
+  font-size: 1em;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.3s;
 }
 
 .btn-primary {
-    background: #667eea;
-    color: white;
+  background: #667eea;
+  color: white;
 }
 
 .btn-primary:hover {
-    background: #764ba2;
+  background: #764ba2;
 }
 
 .btn-secondary {
-    background: #95a5a6;
-    color: white;
+  background: #95a5a6;
+  color: white;
 }
 
 .btn-secondary:hover {
-    background: #7f8c8d;
+  background: #7f8c8d;
 }
 
-/* ====== EXISTING RESERVATIONS ====== */
 .existing-reservations {
-    background: #f8f9fa;
-    padding: 25px;
-    border-radius: 8px;
-    border: 1px solid #ddd;
-    margin-top: 30px;
+  background: #f8f9fa;
+  padding: 25px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  margin-top: 30px;
 }
 
 .existing-reservations h2 {
-    color: #333;
-    margin-bottom: 20px;
-    padding-bottom: 10px;
-    border-bottom: 2px solid #667eea;
-    font-size: 1.3em;
+  color: #333;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #667eea;
+  font-size: 1.3em;
 }
 
 .reservation-item {
-    background: white;
-    padding: 15px;
-    border-radius: 5px;
-    margin-bottom: 10px;
-    border-left: 4px solid #667eea;
+  background: white;
+  padding: 15px;
+  border-radius: 5px;
+  margin-bottom: 10px;
+  border-left: 4px solid #667eea;
 }
 
 .reservation-item strong {
-    color: #667eea;
+  color: #667eea;
 }
 
 .empty-message {
-    text-align: center;
-    color: #7f8c8d;
-    padding: 20px;
-    font-style: italic;
+  text-align: center;
+  color: #7f8c8d;
+  padding: 20px;
+  font-style: italic;
 }
 
-/* ====== RESPONSIVE DESIGN ====== */
 @media (max-width: 768px) {
-    .header h1 {
-        font-size: 1.8em;
-    }
+  .header h1 {
+    font-size: 1.8em;
+  }
 
-    .form-row {
-        grid-template-columns: 1fr;
-    }
+  .form-row {
+    grid-template-columns: 1fr;
+  }
 
-    .button-group {
-        flex-direction: column;
-    }
+  .button-group {
+    flex-direction: column;
+  }
 
-    .navbar {
-        flex-direction: column;
-        gap: 10px;
-        text-align: center;
-    }
+  .navbar {
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+  }
 
-    .navbar-buttons {
-        width: 100%;
-        justify-content: center;
-    }
+  .navbar-buttons {
+    width: 100%;
+    justify-content: center;
+  }
 
-    .options-grid {
-        grid-template-columns: 1fr;
-    }
+  .options-grid {
+    grid-template-columns: 1fr;
+  }
 }

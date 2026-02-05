@@ -19,7 +19,6 @@ if ($reservering_id == 0) {
     exit();
 }
 
-// Check if user has permission to cancel
 if ($_SESSION['is_admin']) {
     // Medewerker can cancel any reservation
     $query = "SELECT reservering_id FROM reservering WHERE reservering_id = ?";
@@ -46,18 +45,15 @@ if ($result->num_rows == 0) {
     exit();
 }
 
-// Delete associated extras first (foreign key constraint)
 $delete_extras = $conn->prepare("DELETE FROM reservering_optie WHERE reservering_id = ?");
 $delete_extras->bind_param("i", $reservering_id);
 $delete_extras->execute();
 
-// Delete scores if any
 $delete_scores = $conn->prepare("DELETE FROM score WHERE reservering_id = ?");
 $delete_scores->bind_param("i", $reservering_id);
 $delete_scores->execute();
 
 // Delete the reservation
-$delete_reservation = $conn->prepare("DELETE FROM reservering WHERE reservering_id = ?");
 $delete_reservation->bind_param("i", $reservering_id);
 
 if ($delete_reservation->execute()) {

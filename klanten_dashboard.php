@@ -9,7 +9,6 @@ require 'connect.php';
 
 $klant_id = $_SESSION['user_id'];
 
-// Get customer reservations
 $query = "
     SELECT 
         r.reservering_id,
@@ -307,7 +306,34 @@ while ($row = $result->fetch_assoc()) {
 
       .navbar-links {
         order: 3;
+        width: 100%;
         margin-top: 4px;
+        justify-content: center;
+      }
+
+      .navbar-brand {
+        font-size: 16px;
+      }
+
+      .reservations-wrapper {
+        padding: 15px;
+        overflow-x: auto;
+      }
+
+      table.reservations {
+        font-size: 12px;
+        min-width: 600px;
+      }
+
+      table.reservations th,
+      table.reservations td {
+        padding: 6px 4px;
+      }
+
+      .btn-cancel,
+      .btn-view-scores {
+        padding: 4px 8px;
+        font-size: 11px;
       }
     }
   </style>

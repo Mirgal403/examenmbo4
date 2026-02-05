@@ -10,7 +10,6 @@ require 'connect.php';
 $reservering_id = intval($_GET['id'] ?? 0);
 $klant_id = $_SESSION['user_id'];
 
-// Get reservation details and verify ownership
 $query = "
     SELECT 
         r.reservering_id,
@@ -41,7 +40,6 @@ if ($result->num_rows == 0) {
 
 $reservation = $result->fetch_assoc();
 
-// Check if reservation is in the past
 $today = date('Y-m-d');
 if ($reservation['datum'] >= $today) {
     $_SESSION['error'] = "Scores zijn alleen beschikbaar voor voltooide reserveringen.";
@@ -51,7 +49,6 @@ if ($reservation['datum'] >= $today) {
 
 $total_players = $reservation['aantal_volwassenen'] + $reservation['aantal_kinderen'];
 
-// Check if scores exist, if not generate and save them
 $check_scores = "SELECT COUNT(*) as count FROM score WHERE reservering_id = ?";
 $stmt = $conn->prepare($check_scores);
 $stmt->bind_param("i", $reservering_id);
@@ -61,7 +58,6 @@ $row = $count_result->fetch_assoc();
 
 if ($row['count'] == 0) {
     // Generate random scores for each player
-    $insert_score = $conn->prepare("INSERT INTO score (reservering_id, speler_naam, score) VALUES (?, ?, ?)");
     
     for ($i = 1; $i <= $total_players; $i++) {
         $speler_naam = "Persoon " . $i;
@@ -72,9 +68,7 @@ if ($row['count'] == 0) {
     }
 }
 
-// Get all scores for this reservation
 $get_scores = "SELECT speler_naam, score FROM score WHERE reservering_id = ? ORDER BY score DESC";
-$stmt = $conn->prepare($get_scores);
 $stmt->bind_param("i", $reservering_id);
 $stmt->execute();
 $scores_result = $stmt->get_result();
@@ -340,6 +334,23 @@ while ($score_row = $scores_result->fetch_assoc()) {
         padding: 20px;
       }
 
+      .navbar {
+        padding: 10px 16px;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .navbar-links {
+        order: 3;
+        width: 100%;
+        margin-top: 4px;
+        justify-content: center;
+      }
+
+      .navbar-brand {
+        font-size: 16px;
+      }
+
       .info-grid {
         grid-template-columns: 1fr;
       }
@@ -354,6 +365,21 @@ while ($score_row = $scores_result->fetch_assoc()) {
 
       .score-value {
         font-size: 20px;
+      }
+
+      .page-title {
+        font-size: 20px;
+      }
+
+      .scores-header {
+        padding: 12px 16px;
+        font-size: 14px;
+      }
+
+      .rank-badge {
+        width: 28px;
+        height: 28px;
+        font-size: 12px;
       }
     }
   </style>

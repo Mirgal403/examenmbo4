@@ -1,7 +1,5 @@
 <?php
-// User editing form (admin only)
 session_start();
-// Check if user is logged in and is admin
 if(!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     header("Location: login.php");
     exit();
@@ -13,7 +11,6 @@ if (isset($_GET["id"])){
     $select = mysqli_query($conn, "SELECT * FROM users WHERE id='$id'");
     $row = mysqli_fetch_assoc($select);
     
-    // Store the original role to use in the form
     $original_role = $row['role'];
 }
 ?>

@@ -7,41 +7,41 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit();
 }
 
-// Get user info
-$klant_id = $_SESSION['user_id'] ?? null;
+$is_medewerker_booking = (isset($_POST['is_medewerker_booking']) && $_POST['is_medewerker_booking'] == '1');
+
+
+$klant_id = $_SESSION['user_id'] ?? null; // default: klant boekt zelf
 $medewerker_id = null;
 
-// Check if this is a medewerker making a reservation for a customer
-$is_medewerker_booking = false;
-if (isset($_POST['is_medewerker_booking']) && $_POST['is_medewerker_booking'] == '1') {
-    $is_medewerker_booking = true;
-    $medewerker_id = $_SESSION['user_id'];
-    
-    // Get or create customer
-    $customer_email = trim($_POST['customer_email']);
-    $customer_voornaam = trim($_POST['customer_voornaam']);
-    $customer_achternaam = trim($_POST['customer_achternaam']);
-    $customer_telefoon = trim($_POST['customer_telefoon'] ?? '');
-    
-    // Check if customer exists
-    $stmt = $conn->prepare("SELECT klant_id FROM klant WHERE email = ?");
-    $stmt->bind_param("s", $customer_email);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    
-    if ($result->num_rows > 0) {
-        $row = $result->fetch_assoc();
-        $klant_id = $row['klant_id'];
-    } else {
-        // Create new customer with a random password (they can reset it later)
-        $random_password = bin2hex(random_bytes(8));
-        $hashed_password = password_hash($random_password, PASSWORD_DEFAULT);
-        
-        $stmt = $conn->prepare("INSERT INTO klant (voornaam, achternaam, email, wachtwoord_hash, telefoon) VALUES (?, ?, ?, ?, ?)");
-        $stmt->bind_param("sssss", $customer_voornaam, $customer_achternaam, $customer_email, $hashed_password, $customer_telefoon);
-        $stmt->execute();
-        $klant_id = $conn->insert_id;
+if ($is_medewerker_booking) {
+    if (!isset($_SESSION['user_id']) || !($_SESSION['is_admin'] ?? false)) {
+        $_SESSION['error'] = "Geen toegang.";
+        header("Location: login.php");
+        exit();
     }
+
+    $medewerker_id = (int)$_SESSION['user_id'];
+    $selected_klant_id = (int)($_POST['selected_klant_id'] ?? 0);
+
+    if ($selected_klant_id <= 0) {
+        $_SESSION['error'] = "Selecteer eerst een klant.";
+        header("Location: reserverings_pagina_medeweker.php");
+        exit();
+    }
+
+    // check klant bestaat
+    $stmt = $conn->prepare("SELECT klant_id FROM klant WHERE klant_id = ?");
+    $stmt->bind_param("i", $selected_klant_id);
+    $stmt->execute();
+    $res = $stmt->get_result();
+
+    if ($res->num_rows === 0) {
+        $_SESSION['error'] = "Klant niet gevonden.";
+        header("Location: reserverings_pagina_medeweker.php");
+        exit();
+    }
+
+    $klant_id = $selected_klant_id;
 }
 
 if (!$klant_id) {
@@ -50,118 +50,138 @@ if (!$klant_id) {
     exit();
 }
 
-// Get form data
+// ===== Form data =====
 $datum = $_POST['datum'] ?? '';
 $starttijd = $_POST['starttijd'] ?? '';
 $eindtijd = $_POST['eindtijd'] ?? '';
-$baan_id = intval($_POST['baan_id'] ?? 0);
-$aantal_volwassenen = intval($_POST['aantal_volwassenen'] ?? 0);
-$aantal_kinderen = intval($_POST['aantal_kinderen'] ?? 0);
-$duur_uren = intval($_POST['duur_uren'] ?? 1);
-$is_magic_bowlen = intval($_POST['is_magic_bowlen'] ?? 0);
+$baan_id = (int)($_POST['baan_id'] ?? 0);
+$aantal_volwassenen = (int)($_POST['aantal_volwassenen'] ?? 0);
+$aantal_kinderen = (int)($_POST['aantal_kinderen'] ?? 0);
+$duur_uren = (int)($_POST['duur_uren'] ?? 1);
+$is_magic_bowlen = (int)($_POST['is_magic_bowlen'] ?? 0);
 $selected_extras = $_POST['extras'] ?? [];
 
-// Validation
-if (empty($datum) || empty($starttijd) || empty($eindtijd) || $baan_id == 0) {
+if (empty($datum) || empty($starttijd) || empty($eindtijd) || $baan_id <= 0) {
     $_SESSION['error'] = "Alle velden zijn verplicht.";
-    header("Location: " . ($is_medewerker_booking ? "reserverings_pagina_medewerker.php" : "reserverings_pagina_klant.php"));
+    header("Location: " . ($is_medewerker_booking ? "reserverings_pagina_medeweker.php" : "reserverings_pagina_klant.php"));
+    exit();
+}
+
+if (($aantal_volwassenen + $aantal_kinderen) <= 0) {
+    $_SESSION['error'] = "Kies minimaal 1 persoon.";
+    header("Location: " . ($is_medewerker_booking ? "reserverings_pagina_medeweker.php" : "reserverings_pagina_klant.php"));
     exit();
 }
 
 if ($aantal_volwassenen + $aantal_kinderen > 8) {
     $_SESSION['error'] = "Maximum 8 personen per baan.";
-    header("Location: " . ($is_medewerker_booking ? "reserverings_pagina_medewerker.php" : "reserverings_pagina_klant.php"));
+    header("Location: " . ($is_medewerker_booking ? "reserverings_pagina_medeweker.php" : "reserverings_pagina_klant.php"));
     exit();
 }
 
-// Check if lane is available
+// ===== Check lane conflict (overlap) =====
 $check_query = "
-    SELECT COUNT(*) as count 
-    FROM reservering 
-    WHERE baan_id = ? 
-    AND datum = ? 
-    AND (
-        (starttijd < ? AND eindtijd > ?) OR
-        (starttijd >= ? AND starttijd < ?)
-    )
+    FROM reservering
+    WHERE baan_id = ?
+      AND datum = ?
+      AND NOT (eindtijd <= ? OR starttijd >= ?)
 ";
 $stmt = $conn->prepare($check_query);
-$stmt->bind_param("isssss", $baan_id, $datum, $eindtijd, $starttijd, $starttijd, $eindtijd);
+$stmt->bind_param("isss", $baan_id, $datum, $starttijd, $eindtijd);
 $stmt->execute();
-$result = $stmt->get_result();
-$row = $result->fetch_assoc();
+$row = $stmt->get_result()->fetch_assoc();
 
-if ($row['count'] > 0) {
+if ((int)$row['cnt'] > 0) {
     $_SESSION['error'] = "Deze baan is niet beschikbaar voor de geselecteerde tijd.";
-    header("Location: " . ($is_medewerker_booking ? "reserverings_pagina_medewerker.php" : "reserverings_pagina_klant.php"));
+    header("Location: " . ($is_medewerker_booking ? "reserverings_pagina_medeweker.php" : "reserverings_pagina_klant.php"));
     exit();
 }
 
-// Calculate tariff
-$dayOfWeek = date('N', strtotime($datum));
+// ===== Tarief bepalen =====
+$dayOfWeek = (int)date('N', strtotime($datum));
 $isWeekend = ($dayOfWeek >= 5);
-$hour = intval(substr($starttijd, 0, 2));
+$hour = (int)substr($starttijd, 0, 2);
 
 $tarief_id = null;
-$prijs_per_uur = 0;
+$prijs_per_uur = 0.0;
 
 if ($isWeekend) {
     if ($hour < 18) {
-        $tarief_query = "SELECT tarief_id, prijs_per_uur FROM tarief WHERE naam = 'Vr-Zo Middag'";
+        $tarief_query = "SELECT tarief_id, prijs_per_uur FROM tarief WHERE naam = 'Vr-Zo Middag' LIMIT 1";
     } else {
-        $tarief_query = "SELECT tarief_id, prijs_per_uur FROM tarief WHERE naam = 'Vr-Zo Avond'";
+        $tarief_query = "SELECT tarief_id, prijs_per_uur FROM tarief WHERE naam = 'Vr-Zo Avond' LIMIT 1";
     }
 } else {
-    $tarief_query = "SELECT tarief_id, prijs_per_uur FROM tarief WHERE naam = 'Ma-Do'";
+    $tarief_query = "SELECT tarief_id, prijs_per_uur FROM tarief WHERE naam = 'Ma-Do' LIMIT 1";
 }
 
 $result = $conn->query($tarief_query);
-if ($result->num_rows > 0) {
+if ($result && $result->num_rows > 0) {
     $tarief = $result->fetch_assoc();
-    $tarief_id = $tarief['tarief_id'];
-    $prijs_per_uur = $tarief['prijs_per_uur'];
+    $tarief_id = (int)$tarief['tarief_id'];
+    $prijs_per_uur = (float)$tarief['prijs_per_uur'];
+} else {
+    $_SESSION['error'] = "Tarief niet gevonden in de database.";
+    header("Location: " . ($is_medewerker_booking ? "reserverings_pagina_medeweker.php" : "reserverings_pagina_klant.php"));
+    exit();
 }
 
-// Calculate total price
+// ===== Totaal prijs =====
 $totaal_prijs = $prijs_per_uur * $duur_uren;
 
-// Add extras prices
-foreach ($selected_extras as $optie_id) {
+// extras optellen
+foreach ($selected_extras as $optie_id_raw) {
+    $optie_id = (int)$optie_id_raw;
+    if ($optie_id <= 0) continue;
+
     $stmt = $conn->prepare("SELECT meerprijs FROM optie WHERE optie_id = ?");
     $stmt->bind_param("i", $optie_id);
     $stmt->execute();
-    $result = $stmt->get_result();
-    if ($result->num_rows > 0) {
-        $optie = $result->fetch_assoc();
-        $totaal_prijs += $optie['meerprijs'];
+    $r = $stmt->get_result();
+    if ($r->num_rows > 0) {
+        $optie = $r->fetch_assoc();
+        $totaal_prijs += (float)$optie['meerprijs'];
     }
 }
 
-// Insert reservation
 $insert_query = "
-    INSERT INTO reservering 
-    (klant_id, medewerker_id, baan_id, tarief_id, datum, starttijd, eindtijd, duur_uren, 
-     aantal_volwassenen, aantal_kinderen, totaal_prijs, is_magic_bowlen) 
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+INSERT INTO reservering
+(klant_id, medewerker_id, baan_id, tarief_id, datum, starttijd, eindtijd, duur_uren,
+ aantal_volwassenen, aantal_kinderen, totaal_prijs, is_magic_bowlen)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 ";
 
 $stmt = $conn->prepare($insert_query);
+
 $stmt->bind_param(
-    "iiiisssiiiid", 
-    $klant_id, $medewerker_id, $baan_id, $tarief_id, $datum, $starttijd, $eindtijd, 
-    $duur_uren, $aantal_volwassenen, $aantal_kinderen, $totaal_prijs, $is_magic_bowlen
+    "iiiisssiiidi",
+    $klant_id,
+    $medewerker_id,
+    $baan_id,
+    $tarief_id,
+    $datum,
+    $starttijd,
+    $eindtijd,
+    $duur_uren,
+    $aantal_volwassenen,
+    $aantal_kinderen,
+    $totaal_prijs,
+    $is_magic_bowlen
 );
 
 if (!$stmt->execute()) {
     $_SESSION['error'] = "Er is een fout opgetreden bij het opslaan van de reservering.";
-    header("Location: " . ($is_medewerker_booking ? "reserverings_pagina_medewerker.php" : "reserverings_pagina_klant.php"));
+    header("Location: " . ($is_medewerker_booking ? "reserverings_pagina_medeweker.php" : "reserverings_pagina_klant.php"));
     exit();
 }
 
 $reservering_id = $conn->insert_id;
 
-// Insert extras
-foreach ($selected_extras as $optie_id) {
+// ===== Insert extras in reservering_optie =====
+foreach ($selected_extras as $optie_id_raw) {
+    $optie_id = (int)$optie_id_raw;
+    if ($optie_id <= 0) continue;
+
     $stmt = $conn->prepare("INSERT INTO reservering_optie (reservering_id, optie_id, aantal) VALUES (?, ?, 1)");
     $stmt->bind_param("ii", $reservering_id, $optie_id);
     $stmt->execute();

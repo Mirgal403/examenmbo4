@@ -3,15 +3,12 @@ session_start();
 require 'connect.php';
 
 if (isset($_POST['signup'])) {
-    $userType = $_POST['userType'] ?? 'klant'; 
+    $userType = $_POST['userType'] ?? 'klant';
     
-    // 1. Check for Empty Fields (Basic Validation)
     if (empty($_POST['email']) || empty($_POST['password'])) {
         header("Location: register.php?error=empty_fields");
         exit();
     }
-    
-    // 2. Validate Email Format
     $email = trim($_POST['email']);
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         header("Location: register.php?error=invalid_email");
@@ -25,9 +22,6 @@ if (isset($_POST['signup'])) {
     }
 
     $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-    
- 
-    // LOGIC FOR MEDEWERKER
     
     if ($userType === 'medewerker') {
         if (empty($_POST['naam'])) {
@@ -52,7 +46,6 @@ if (isset($_POST['signup'])) {
         // Insert Medewerker
         $stmt = $conn->prepare("INSERT INTO medewerker (naam, email, wachtwoord_hash, rol) VALUES (?, ?, ?, 'medewerker')");
         $stmt->bind_param("sss", $naam, $email, $hashedPassword);
-        
         if ($stmt->execute()) {
             header("Location: login.php?registered=1");
             exit();
@@ -66,8 +59,6 @@ if (isset($_POST['signup'])) {
   
     } else {
         if (empty($_POST['voornaam']) || empty($_POST['achternaam'])) {
-            header("Location: register.php?error=empty_fields");
-            exit();
         }
         
         $voornaam = trim($_POST['voornaam']);
@@ -77,7 +68,6 @@ if (isset($_POST['signup'])) {
         // Check for Duplicate Email
         $stmt = $conn->prepare("SELECT klant_id FROM klant WHERE email = ?");
         $stmt->bind_param("s", $email);
-        $stmt->execute();
         $stmt->store_result();
         
         if ($stmt->num_rows > 0) {
@@ -90,7 +80,6 @@ if (isset($_POST['signup'])) {
         // Insert Klant
         $stmt = $conn->prepare("INSERT INTO klant (voornaam, achternaam, email, wachtwoord_hash, telefoon) VALUES (?, ?, ?, ?, ?)");
         $stmt->bind_param("sssss", $voornaam, $achternaam, $email, $hashedPassword, $telefoon);
-        
         if ($stmt->execute()) {
             header("Location: login.php?registered=1");
             exit();

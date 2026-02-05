@@ -6,7 +6,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['is_admin']) {
 }
 require 'connect.php';
 
-// Get all extras
 $extras_query = "SELECT * FROM optie ORDER BY optie_id";
 $extras_result = $conn->query($extras_query);
 $extras = [];
@@ -101,6 +100,78 @@ while ($row = $extras_result->fetch_assoc()) {
 
         .loading { text-align: center; padding: 40px; color: #666; }
         .hidden { display: none; }
+
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                padding: 15px 20px;
+                gap: 10px;
+            }
+
+            .header-left, .header-right {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .logo {
+                margin-right: 0;
+                margin-bottom: 10px;
+            }
+
+            .nav-links {
+                justify-content: center;
+            }
+
+            .container {
+                padding: 15px;
+            }
+
+            .date-picker-wrapper input[type="date"] {
+                width: 100%;
+            }
+
+            .duration-selector {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .cards-wrapper {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .card {
+                width: 100%;
+            }
+
+            .gray-box {
+                padding: 15px 20px;
+            }
+
+            .composition-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .counter-controls {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .overview-table {
+                font-size: 13px;
+            }
+
+            .overview-table td {
+                padding: 8px 0;
+            }
+
+            .btn-confirm {
+                width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
@@ -197,7 +268,7 @@ while ($row = $extras_result->fetch_assoc()) {
                     <div class="card-lane" style="margin-bottom: 10px;"><?php echo htmlspecialchars($extra['beschrijving']); ?></div>
                     <?php endif; ?>
                     <div class="card-price">€ <?php echo number_format($extra['meerprijs'], 2, ',', '.'); ?></div>
-                    <button type="button" class="btn-select" onclick="toggleExtra(this, <?php echo $extra['optie_id']; ?>)">
+                    <button type="button" class="btn-select" onclick="toggleExtra(event, <?php echo $extra['optie_id']; ?>)">
                         Kies <span class="btn-select-icon">-</span>
                     </button>
                 </div>
@@ -260,18 +331,15 @@ while ($row = $extras_result->fetch_assoc()) {
                 document.getElementById('aantal_kinderen').value = children;
             }
 
-            // Validatie: Max 8 volwassenen alleen, OF max 6 totaal bij gemengde groep
             let isValid = true;
             let errorMessage = '';
             
             if (children > 0) {
-                // Gemengde groep: max 6 totaal
                 if (adults + children > 6) {
                     isValid = false;
                     errorMessage = 'Maximum 6 personen per baan bij groepen met kinderen!';
                 }
             } else {
-                // Alleen volwassenen: max 8
                 if (adults > 8) {
                     isValid = false;
                     errorMessage = 'Maximum 8 volwassenen per baan!';
@@ -279,7 +347,6 @@ while ($row = $extras_result->fetch_assoc()) {
             }
             
             if (!isValid) {
-                // Reset to previous valid value
                 if (type === 'adults') {
                     adults = Math.max(0, adults - delta);
                     document.getElementById('adults-count').textContent = adults;
@@ -316,7 +383,6 @@ while ($row = $extras_result->fetch_assoc()) {
                 .then(res => res.json())
                 .then(data => {
                     document.getElementById('loading').classList.add('hidden');
-                    
                     if (data.success) {
                         availableSlots = data.timeSlots;
                         renderTimeSlots();
@@ -337,7 +403,6 @@ while ($row = $extras_result->fetch_assoc()) {
                 return;
             }
 
-            // Group by time
             const grouped = {};
             availableSlots.forEach(slot => {
                 const key = `${slot.start}-${slot.end}`;
@@ -347,50 +412,43 @@ while ($row = $extras_result->fetch_assoc()) {
 
             Object.keys(grouped).forEach(timeKey => {
                 const slots = grouped[timeKey];
-                
                 slots.forEach(slot => {
-                    if (!slot.available) return; // Skip unavailable
+                    if (!slot.available) return;
 
                     const card = document.createElement('div');
                     card.className = 'card';
-                    if (slot.is_priority) card.classList.add('priority');
+                    if (children > 0 && slot.is_kinderbaan && slot.is_priority) {
+                        card.classList.add('priority');
+                    }
 
-                    let html = `
+                    card.innerHTML = `
                         <div class="card-time">${slot.start} - ${slot.end}</div>
-                        <div class="card-lane">Baan ${slot.baan_nummer} ${slot.is_kinderbaan ? '<span class="badge-bumpers">👶 Hekjes</span>' : ''}</div>
+                        <div class="card-lane">Baan ${slot.baan_nummer} ${(slot.baan_nummer == 1 || slot.baan_nummer == 8) ? '<span class="badge-bumpers">👶 Hekjes</span>' : ''}</div>
                         <div class="card-price">€ ${slot.price.toFixed(2).replace('.', ',')}</div>
                         ${slot.is_magic_bowling ? '<div class="badge-magic">✨ Magic Bowling</div>' : ''}
-                        <button type="button" class="btn-select" onclick="selectTimeSlot(${slot.baan_id}, '${slot.start}', '${slot.end}', ${slot.price}, ${slot.is_magic_bowling})">
+                        <button type="button" class="btn-select" onclick="selectTimeSlot(event, ${slot.baan_id}, '${slot.start}', '${slot.end}', ${slot.price}, ${slot.is_magic_bowling})">
                             Kies <span class="btn-select-icon">-</span>
                         </button>
                     `;
-                    
-                    card.innerHTML = html;
                     container.appendChild(card);
                 });
             });
         }
 
-        function selectTimeSlot(baanId, start, end, price, isMagic) {
-            // Clear previous selection
+        function selectTimeSlot(event, baanId, start, end, price, isMagic) {
             document.querySelectorAll('#time-slots-container .btn-select-icon').forEach(icon => {
                 icon.classList.remove('selected');
                 icon.innerHTML = '-';
             });
 
-            // Set new selection
-            event.target.classList.add('selected');
-            event.target.innerHTML = '&#10003;';
+            const target = event.currentTarget.querySelector('.btn-select-icon');
+            target.classList.add('selected');
+            target.innerHTML = '&#10003;';
 
-            // Find the complete slot info
             const completeSlot = availableSlots.find(s => s.baan_id === baanId && s.start === start && s.end === end);
             
             selectedSlot = { 
-                baanId, 
-                start, 
-                end, 
-                price, 
-                isMagic,
+                baanId, start, end, price, isMagic,
                 baan_nummer: completeSlot ? completeSlot.baan_nummer : '?'
             };
             
@@ -402,9 +460,8 @@ while ($row = $extras_result->fetch_assoc()) {
             updateOverview();
         }
 
-        function toggleExtra(btn, optieId) {
-            const icon = btn.querySelector('.btn-select-icon');
-            
+        function toggleExtra(event, optieId) {
+            const icon = event.currentTarget.querySelector('.btn-select-icon');
             if (icon.classList.contains('selected')) {
                 icon.classList.remove('selected');
                 icon.innerHTML = '-';
@@ -414,20 +471,15 @@ while ($row = $extras_result->fetch_assoc()) {
                 icon.innerHTML = '&#10003;';
                 selectedExtras.push(optieId);
             }
-
             updateOverview();
         }
 
         function updateOverview() {
             const datum = document.getElementById('datum').value;
-            
-            // Date & Time
             if (selectedSlot && datum) {
                 const formattedDate = new Date(datum).toLocaleDateString('nl-NL');
                 document.getElementById('ov-datetime').innerHTML = `${formattedDate} | ${selectedSlot.start} - ${selectedSlot.end}`;
                 document.getElementById('ov-datetime-price').innerHTML = `€ ${selectedSlot.price.toFixed(2).replace('.', ',')}`;
-                
-                // Display lane number (stored in selectedSlot)
                 document.getElementById('ov-lane').innerHTML = `Baan ${selectedSlot.baan_nummer}`;
             } else {
                 document.getElementById('ov-datetime').innerHTML = '-';
@@ -435,20 +487,15 @@ while ($row = $extras_result->fetch_assoc()) {
                 document.getElementById('ov-lane').innerHTML = '-';
             }
 
-            // Guests
             document.getElementById('ov-guests').innerHTML = `${adults} Volwassenen, ${children} Kinderen`;
 
-            // Extras
             let extrasTotal = 0;
             let extrasNames = [];
-            
             selectedExtras.forEach(id => {
                 const extra = extrasData.find(e => e.optie_id == id);
                 if (extra) {
-                    const extraPrice = parseFloat(extra.meerprijs);
-                    extrasTotal += extraPrice;
+                    extrasTotal += parseFloat(extra.meerprijs);
                     extrasNames.push(extra.naam);
-                    console.log('Extra:', extra.naam, 'Price:', extraPrice, 'Running total:', extrasTotal);
                 }
             });
 
@@ -461,20 +508,15 @@ while ($row = $extras_result->fetch_assoc()) {
                 extrasRow.classList.add('hidden');
             }
 
-            // Total 
             let total = 0;
             if (selectedSlot) {
-                const slotPrice = parseFloat(selectedSlot.price);
-                total = slotPrice + extrasTotal;
-                console.log('Slot price:', slotPrice, 'Extras total:', extrasTotal, 'Final total:', total);
+                total = parseFloat(selectedSlot.price) + extrasTotal;
             }
             document.getElementById('ov-total').innerHTML = `€ ${total.toFixed(2).replace('.', ',')}`;
 
-            // Enable/disable confirm button
             const confirmBtn = document.getElementById('confirmBtn');
             confirmBtn.disabled = !selectedSlot || !datum || (adults + children === 0);
 
-            // Update hidden extras inputs
             document.querySelectorAll('input[name="extras[]"]').forEach(el => el.remove());
             selectedExtras.forEach(id => {
                 const input = document.createElement('input');
@@ -485,13 +527,11 @@ while ($row = $extras_result->fetch_assoc()) {
             });
         }
 
-        // Event listeners
         document.getElementById('datum').addEventListener('change', updateAvailability);
         document.querySelectorAll('input[name="duur_uren"]').forEach(radio => {
             radio.addEventListener('change', updateAvailability);
         });
 
-        // Initial update
         updateOverview();
     </script>
 </body>

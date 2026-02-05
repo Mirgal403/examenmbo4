@@ -66,30 +66,24 @@
     <h1>Database Content</h1>
 
     <?php
-    // --- UPDATE YOUR DATABASE DETAILS HERE ---
-    $servername = "sql305.infinityfree.com"; // Or your host
-    $username = "if0_40576696";             // Your database username
-    $password = "3HNSgnTKq91NDp";           // Your database password
-    $dbname = "if0_40576696_examenprojectmbo"; // Your database name
+    $servername = "sql305.infinityfree.com";
+    $username = "if0_40576696";
+    $password = "3HNSgnTKq91NDp";
+    $dbname = "if0_40576696_examenprojectmbo";
 
-    // Create connection
     $conn = new mysqli($servername, $username, $password, $dbname);
 
-    // Check connection
     if ($conn->connect_error) {
         die("<div class='error'>Connection failed: " . $conn->connect_error . "</div>");
     }
 
-    // Get all table names
     $tables_query = $conn->query("SHOW TABLES");
 
     if ($tables_query->num_rows > 0) {
-        // Loop through each table
         while ($table_row = $tables_query->fetch_array()) {
             $table_name = $table_row[0];
             echo "<h2>Table: `" . htmlspecialchars($table_name) . "`</h2>";
 
-            // Query to get all data from the table
             $data_query = $conn->query("SELECT * FROM `" . $table_name . "`");
 
             if ($data_query->num_rows > 0) {
@@ -108,7 +102,6 @@
                 while ($row = $data_query->fetch_assoc()) {
                     echo "<tr>";
                     foreach ($row as $cell) {
-                        // Use htmlspecialchars to prevent XSS attacks
                         echo "<td>" . htmlspecialchars($cell) . "</td>";
                     }
                     echo "</tr>";
@@ -124,7 +117,6 @@
     }
 
     // Close the connection
-    $conn->close();
     ?>
 </div>
 

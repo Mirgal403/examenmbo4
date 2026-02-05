@@ -1,7 +1,5 @@
 <?php
-// User listing page (admin only)
 session_start();
-// Check if user is logged in and is admin
 if(!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     header("Location: login.php");
     exit();
@@ -75,7 +73,7 @@ if(!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
         .delete-btn {
             background-color: #f44336;
         }
-    </style></style>
+    </style>
     <div id="users" style="width: 50%;margin: auto; padding-top:15px">
         <div style="text-align: center; margin-bottom: 20px;">
             <h1>User Management</h1>
@@ -104,7 +102,7 @@ if(!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 
         if (mysqli_num_rows($query) > 0) {
 
-            while ($row = mysqli_fetch_assoc($query)) {   // Bepaal weergave op basis van rol
+            while ($row = mysqli_fetch_assoc($query)) {
                 $roleDisplay = $row['role'];
                 
                 if ($row['role'] == 'admin') {
@@ -118,7 +116,7 @@ if(!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                 echo "<tr>";
                 echo "<td>" . $row['id'] . "</td>";
                 echo "<td>" . $row['username'] . "</td>";
-                echo "<td>********</td>"; // Wachtwoord verbergen met sterretjes
+                echo "<td>********</td>";
                 echo "<td>" . $row['email'] . "</td>";
                 echo "<td>" . $roleDisplay . "</td>";
                 echo '<td><a href="edit.php?id=' . $row['id'] . '" class="btn btn-outline-success" role= "button" aria-pressed="true">edit</a></td>';

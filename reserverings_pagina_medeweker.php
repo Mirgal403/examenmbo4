@@ -6,7 +6,6 @@ if (!isset($_SESSION['user_id']) || !$_SESSION['is_admin']) {
 }
 require 'connect.php';
 
-// Get all extras
 $extras_query = "SELECT * FROM optie ORDER BY optie_id";
 $extras_result = $conn->query($extras_query);
 $extras = [];
@@ -14,15 +13,11 @@ while ($row = $extras_result->fetch_assoc()) {
     $extras[] = $row;
 }
 
-// Get all customers
+// Get all customers (for client-side search)
 $klanten_query = "SELECT klant_id, voornaam, achternaam, email, telefoon 
                   FROM klant 
                   ORDER BY achternaam, voornaam";
 $klanten_result = $conn->query($klanten_query);
-
-if (!$klanten_result) {
-    die("SQL fout (klanten_query): " . $conn->error);
-}
 
 $alle_klanten = [];
 while ($row = $klanten_result->fetch_assoc()) {
@@ -312,10 +307,11 @@ while ($row = $klanten_result->fetch_assoc()) {
 
     let selectedCustomer = null;
     let allCustomers = <?php echo json_encode($alle_klanten, JSON_UNESCAPED_UNICODE); ?>;
-    let searchTimeout;
-    const customerSearchInput = document.getElementById('customer_search');
-    const customerResultsDiv = document.getElementById('customer_results');
 
+    /* =========================
+       CUSTOMER SEARCH (FIXED)
+       - works with 1 letter
+       - click result to select
     customerSearchInput.addEventListener('input', function(e) {
         clearTimeout(searchTimeout);
         const query = e.target.value.trim();
@@ -384,7 +380,6 @@ while ($row = $klanten_result->fetch_assoc()) {
             parseInt(item.dataset.id, 10),
             item.dataset.voornaam || '',
             item.dataset.achternaam || '',
-            item.dataset.email || '',
             item.dataset.telefoon || ''
         );
     });
@@ -435,7 +430,6 @@ while ($row = $klanten_result->fetch_assoc()) {
         return String(str ?? '').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
     }
 
-    /* =========================
        ORIGINAL LOGIC (unchanged)
     ========================= */
     function changeCount(type, delta) {
@@ -446,9 +440,6 @@ while ($row = $klanten_result->fetch_assoc()) {
         } else {
             children = Math.max(0, Math.min(8, children + delta));
             document.getElementById('children-count').textContent = children;
-            document.getElementById('aantal_kinderen').value = children;
-        }
-
         if (adults + children > 8) {
             if (type === 'adults') {
                 adults = Math.max(0, adults - delta);
@@ -539,7 +530,6 @@ while ($row = $klanten_result->fetch_assoc()) {
         });
     }
 
-   
     function selectTimeSlot(baanId, start, end, price, isMagic) {
         document.querySelectorAll('#time-slots-container .btn-select-icon').forEach(icon => {
             icon.classList.remove('selected');
